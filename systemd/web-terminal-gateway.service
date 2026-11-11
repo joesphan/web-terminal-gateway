@@ -1,0 +1,26 @@
+[Unit]
+Description=Authenticated TOTP gateway for the loopback web terminal
+After=network-online.target web-terminal.service
+Wants=network-online.target
+Requires=web-terminal.service
+
+[Service]
+Type=simple
+User=__SERVICE_USER__
+Group=__SERVICE_GROUP__
+WorkingDirectory=/opt/web-terminal-gateway
+Environment=GATEWAY_HOST=0.0.0.0
+Environment=GATEWAY_PORT=8787
+Environment=STATE_DIR=/var/lib/web-terminal-gateway
+Environment=TTYD_HOST=127.0.0.1
+Environment=TTYD_PORT=7682
+Environment=TERMINAL_BASE=/terminal/ui
+Environment=TOTP_ISSUER=web-terminal
+# Environment=COOKIE_SECURE=1
+# Environment=GATEWAY_PASSWORD=...
+ExecStart=/usr/bin/python3 /opt/web-terminal-gateway/gateway.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

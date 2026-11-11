@@ -1,0 +1,17 @@
+[Unit]
+Description=Loopback ttyd web terminal (tmux-backed)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__SERVICE_USER__
+Group=__SERVICE_GROUP__
+WorkingDirectory=__HOME__
+Environment=TERM=xterm-256color
+ExecStart=/usr/bin/ttyd --interface 127.0.0.1 --port 7682 --base-path /terminal/ui --writable --terminal-type xterm-256color --ping-interval 10 --max-clients 4 -t scrollback=5000 /usr/bin/tmux -L webterm -u -f /opt/web-terminal-gateway/tmux.conf new-session -A -s main
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
