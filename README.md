@@ -19,10 +19,12 @@ flowchart LR
 - **Authenticator login.** 6-digit TOTP codes from Microsoft Authenticator
   (or any standard authenticator app). No passwords to the shell.
 - **Sessions that stay signed in.** The browser cookie lasts 400 days and the
-  token is stored on disk, so a dashboard restart does not log you out.
+  token is stored on disk, so a gateway restart does not log you out.
 - **Enrollment only from the LAN.** The QR code and manual key are served only
-  to direct private-network requests with dashboard admin auth; requests that
-  arrive through a tunnel are refused, even if they know the password.
+  to direct private-network requests after the admin password; requests that
+  arrive through a tunnel are refused, even if they know the password. The
+  public login page shows nothing but the Authenticator code field — no links
+  to the password or enrollment forms.
 - **A shell that never dies.** ttyd runs `tmux new-session -A -s main`, so a
   dropped WebSocket detaches a client instead of ending the shell.
 - **Automatic reconnect.** A script injected into ttyd's page reloads or
