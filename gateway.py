@@ -422,15 +422,20 @@ def page(title, body):
 </main></body></html>""".encode("utf-8")
 
 
-def login_page(error="", note=""):
+def login_page(error="", note="", can_enroll=True):
     secret = bool(read_secret())
     if not secret:
+        button = (
+            '<p><a class="button" href="/enroll">Open LAN enrollment</a></p>'
+            if can_enroll
+            else ""
+        )
         return page("web terminal access", f"""
   <div class="sub">SECURE TERMINAL</div>
   <h1>Microsoft Authenticator</h1>
   <p>This terminal has no Authenticator enrollment yet. Enrollment is
      only available from the LAN.</p>
-  <p><a class="button" href="/enroll">Open LAN enrollment</a></p>
+  {button}
   <p class="err">{html.escape(error)}</p>
 """)
     return page("web terminal access", f"""
@@ -689,18 +694,19 @@ class Handler(BaseHTTPRequestHandler):
         if session_valid(self):
             self.redirect(TERMINAL_BASE + "/")
             return
+        can_enroll = lan_client(self)
         if method == "GET":
-            self.send_body(login_page())
+            self.send_body(login_page(can_enroll=can_enroll))
             return
         ip = self.client_address[0]
         if login_blocked(ip):
-            self.send_body(login_page("Too many attempts. Try again later."))
+            self.send_body(login_page("Too many attempts. Try again later.", can_enroll=can_enroll))
             return
         code = (self.form().get("code") or [""])[0]
         secret = read_secret()
         if not secret or not verify_code(secret, code):
             record_failure(ip)
-            self.send_body(login_page("Invalid or expired code."))
+            self.send_body(login_page("Invalid or expired code.", can_enroll=can_enroll))
             return
         clear_failures(ip)
         self.redirect(TERMINAL_BASE + "/", ((COOKIE, new_session(), SESSION_TTL, "/"),))
